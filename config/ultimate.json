@@ -1,0 +1,87 @@
+{
+  "initial_capital": 1500,
+  "symbols": ["BTC/USD", "ETH/USD", "BTC/ETH", "BTC/AUD", "ETH/AUD"],
+  "exchanges": {
+    "primary_exchange": "kraken",
+    "fallback_exchanges": ["binance", "coinbase"],
+    "config_path": "config/exchanges.yaml"
+  },
+  "multi_agent": {
+    "num_agents": 20,
+    "agent_types": ["market_maker", "arbitrageur", "trend_follower", "mean_reversion", "ai_trader"]
+  },
+  "strategy_engine": {
+    "optimization_interval": 3600,
+    "validation_interval": 86400,
+    "market_regimes": ["bull", "bear", "sideways", "high_volatility", "low_volatility"]
+  },
+  "market_making": {
+    "base_spread": 0.001,
+    "order_size": 0.1,
+    "refresh_interval": 1.0,
+    "inventory_threshold": 1.0,
+    "symbols": ["BTC/USD", "ETH/USD"]
+  },
+  "arbitrage": {
+    "min_profit": 0.005,
+    "base_position_size": 0.1,
+    "max_position_size": 1.0,
+    "latency_threshold": 100,
+    "opportunity_timeout": 5.0,
+    "refresh_interval": 0.5
+  },
+  "risk_management": {
+    "max_position_size": 0.2,
+    "max_daily_loss": 0.1,
+    "max_drawdown": 0.2,
+    "correlation_threshold": 0.7,
+    "volatility_multiplier": 1.0,
+    "optimization": {
+      "generations": 30,
+      "population_size": 100
+    }
+  },
+  "execution": {
+    "default_strategy": "smart",
+    "max_slippage": 0.01,
+    "order_timeout": 30.0
+  },
+  "self_healing": {
+    "max_retries": 3,
+    "retry_delay": 5,
+    "health_check_interval": 60,
+    "max_cpu": 80,
+    "max_memory": 80,
+    "max_restarts": 5
+  },
+  "alerts": {
+    "telegram": {
+      "token": "your_telegram_bot_token",
+      "chat_id": "your_chat_id"
+    },
+    "cooldown": 300,
+    "min_daily_pnl": -100,
+    "min_win_rate": 50,
+    "max_drawdown": 0.2,
+    "max_leverage": 5,
+    "min_strategy_return": 0.05,
+    "min_profit_factor": 1.5,
+    "max_volatility": 0.05,
+    "min_liquidity": 1000000,
+    "min_sentiment": -0.5
+  },
+  "optimization": {
+    "interval": 3600,
+    "generations": 30,
+    "population_size": 100
+  },
+  "validation": {
+    "interval": 86400
+  },
+  "loop_interval": 0.1,
+  "quantum": {
+    "enabled": false,
+    "backend": "qasm_simulator"
+  }
+}
+

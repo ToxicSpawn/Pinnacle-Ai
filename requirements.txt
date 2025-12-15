@@ -91,3 +91,20 @@ praw>=7.7.0  # Reddit API (optional)
 transformers>=4.35.0  # Sentiment analysis (already included but ensuring version)
 streamlit>=1.28.0  # Advanced dashboard (already included)
 plotly>=5.17.0  # Interactive charts
+
+# Self-healing and monitoring
+psutil>=5.9.0  # System monitoring
+
+# Genetic algorithms
+deap>=1.3.3  # Already included but ensuring version
+
+# Ultimate Bot: Pinnacle Features
+# Quantum computing (optional)
+qiskit>=0.45.0  # Quantum computing framework
+qiskit-aer>=0.13.0  # Quantum simulator
+
+# Multi-agent systems
+mesa>=2.1.0  # Multi-agent simulation framework
+
+# Additional ML/AI
+spacy>=3.7.0  # NLP for sentiment analysis
