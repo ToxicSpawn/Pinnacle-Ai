@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  kracken-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: kracken-bot
+    restart: unless-stopped
+    environment:
+      - BOT_MODE=${BOT_MODE:-live}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - KOINLY_API_KEY=${KOINLY_API_KEY}
+      # Exchange API keys (use secrets in production)
+      - KRAKEN_API_KEY=${KRAKEN_API_KEY}
+      - KRAKEN_API_SECRET=${KRAKEN_API_SECRET}
+      - BINANCE_API_KEY=${BINANCE_API_KEY}
+      - BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - COINBASE_API_KEY=${COINBASE_API_KEY}
+      - COINBASE_API_SECRET=${COINBASE_API_SECRET}
+      - COINBASE_API_PASSPHRASE=${COINBASE_API_PASSPHRASE}
+    volumes:
+      - ./config:/app/config:ro
+      - ./models:/app/models
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+    networks:
+      - trading-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Add Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: kracken-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - trading-network
+
+  # Optional: Add Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kracken-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - trading-network
+
+volumes:
+  redis-data:
+  prometheus-data:
+
+networks:
+  trading-network:
+    driver: bridge
+

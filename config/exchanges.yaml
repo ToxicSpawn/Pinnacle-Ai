@@ -1,0 +1,82 @@
+# Exchange Configuration
+# Supports multiple exchanges via CCXT
+# 
+# To use encrypted API keys, set encrypted: true and provide encrypted_key/encrypted_secret
+# Otherwise, use api_key and secret directly (or set via environment variables)
+
+exchanges:
+  kraken:
+    enabled: true
+    api_key: ${KRAKEN_API_KEY}  # Can use env var or set directly
+    secret: ${KRAKEN_API_SECRET}  # Can use env var or set directly
+    encrypted: false
+    sandbox: false
+    enable_rate_limit: true
+    load_markets_on_init: false
+    options: {}
+    symbols:
+      - BTC/USD
+      - ETH/USD
+      - SOL/USD
+
+  binance:
+    enabled: true
+    api_key: ${BINANCE_API_KEY}
+    secret: ${BINANCE_API_SECRET}
+    encrypted: false
+    sandbox: false
+    enable_rate_limit: true
+    load_markets_on_init: false
+    options: {}
+    symbols:
+      - BTC/USDT
+      - ETH/USDT
+      - SOL/USDT
+
+  coinbase:
+    enabled: true
+    api_key: ${COINBASE_API_KEY}
+    secret: ${COINBASE_API_SECRET}
+    passphrase: ${COINBASE_API_PASSPHRASE}
+    encrypted: false
+    sandbox: false
+    enable_rate_limit: true
+    load_markets_on_init: false
+    options: {}
+    symbols:
+      - BTC-USD
+      - ETH-USD
+      - SOL-USD
+
+  # Example: Bybit (uncomment to enable)
+  # bybit:
+  #   enabled: false
+  #   api_key: ${BYBIT_API_KEY}
+  #   secret: ${BYBIT_API_SECRET}
+  #   encrypted: false
+  #   sandbox: false
+  #   enable_rate_limit: true
+  #   load_markets_on_init: false
+  #   options: {}
+  #   symbols:
+  #     - BTC/USDT
+  #     - ETH/USDT
+
+# Default exchange to use if not specified
+default_exchange: kraken
+
+# WebSocket configuration
+websocket:
+  enabled: true
+  reconnect_delay: 5  # seconds
+  max_reconnect_attempts: 10
+  subscriptions:
+    - exchange: kraken
+      symbols:
+        - BTC/USD
+        - ETH/USD
+    - exchange: binance
+      symbols:
+        - BTC/USDT
+        - ETH/USDT
+
