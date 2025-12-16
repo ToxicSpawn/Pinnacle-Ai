@@ -9,10 +9,9 @@ Advanced Memory System with:
 """
 
 import numpy as np
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict
 from loguru import logger
 from datetime import datetime
-import json
 from collections import defaultdict
 
 try:

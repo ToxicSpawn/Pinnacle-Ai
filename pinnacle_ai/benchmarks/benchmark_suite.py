@@ -11,7 +11,7 @@ Tracks:
 
 import json
 import time
-from typing import Dict, List, Optional
+from typing import Dict
 from loguru import logger
 from datetime import datetime
 import os
