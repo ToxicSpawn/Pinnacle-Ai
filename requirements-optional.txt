@@ -1,0 +1,24 @@
+# Optional dependencies for Pinnacle AI
+
+# Web interface
+gradio>=4.0.0
+
+# Enhanced LLM support (choose one or more)
+openai>=1.0.0
+anthropic>=0.7.0
+
+# Web search
+google-search-results>=2.4.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+
+# Image generation
+pillow>=10.0.0
+
+# Audio processing
+pydub>=0.25.0
+
+# Enhanced visualization
+matplotlib>=3.7.0
+plotly>=5.17.0
+

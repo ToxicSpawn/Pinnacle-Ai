@@ -55,10 +55,40 @@ Thank you for your interest in contributing to Pinnacle AI! This document provid
 ## Code Style
 
 - Follow PEP 8 for Python code
-- Use type hints where appropriate
+- Use type hints where appropriate (e.g., `def func(x: int) -> str:`)
 - Write docstrings for all functions and classes
 - Keep functions focused and small
 - Use meaningful variable and function names
+- Format code with `black` before committing
+- Run `ruff` for linting
+
+### Pre-commit Setup
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
+```
+
+## Commit Message Format
+
+Use conventional commits:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+Example:
+```bash
+git commit -m "feat: add new planner agent capabilities"
+git commit -m "fix: resolve memory leak in orchestrator"
+git commit -m "docs: update API reference"
+```
 
 ## Testing
 
@@ -100,9 +130,62 @@ Thank you for your interest in contributing to Pinnacle AI! This document provid
 5. Update CHANGELOG.md if applicable
 6. Request review from maintainers
 
+## Issue Labels
+
+We use the following labels to categorize issues:
+
+- `good first issue` → Beginner-friendly tasks
+- `enhancement` → New features or improvements
+- `bug` → Bug fixes
+- `documentation` → Documentation improvements
+- `question` → Questions or discussions
+- `help wanted` → Extra attention needed
+
+## Development Workflow
+
+1. **Fork and Clone**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/Pinnacle-AI.git
+   cd Pinnacle-AI
+   ```
+
+2. **Create Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. **Make Changes**
+   - Write code following style guidelines
+   - Add tests for new functionality
+   - Update documentation
+
+4. **Test**
+   ```bash
+   pytest tests/
+   ```
+
+5. **Commit**
+   ```bash
+   git add .
+   git commit -m "feat: your feature description"
+   ```
+
+6. **Push and PR**
+   ```bash
+   git push origin feature/your-feature-name
+   # Then open a Pull Request on GitHub
+   ```
+
+## Code Review Process
+
+1. All PRs require at least one review
+2. Address review comments promptly
+3. Keep PRs focused and reasonably sized
+4. Update CHANGELOG.md for user-facing changes
+
 ## Questions?
 
 Feel free to open an issue with the question template or contact the maintainers.
 
-Thank you for contributing to Pinnacle AI!
+Thank you for contributing to Pinnacle AI! 🚀
 

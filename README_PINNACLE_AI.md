@@ -1,10 +1,12 @@
-# Pinnacle AI: The Absolute Pinnacle of Artificial Intelligence
-
-![Pinnacle AI Logo](https://via.placeholder.com/150)
+# Pinnacle AI: The Absolute Pinnacle of Artificial Intelligence 🚀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ToxicSpawn/Pinnacle-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/ToxicSpawn/Pinnacle-AI/actions/workflows/ci.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://img.shields.io/badge/tests-pytest-blue.svg)](https://docs.pytest.org/)
+[![Documentation](https://img.shields.io/badge/docs-available-brightgreen.svg)](docs/)
+[![Status](https://img.shields.io/badge/status-active-success.svg)](https://github.com/ToxicSpawn/Pinnacle-AI)
 
 > **Note**: This is the general-purpose Pinnacle AI system. For the trading bot system, see the main README.md.
 
