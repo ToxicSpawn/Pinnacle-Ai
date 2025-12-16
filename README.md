@@ -1,8 +1,32 @@
-# 🚀 Pinnacle AI - Ultimate Trading Bot
+# 🚀 Pinnacle AI Ecosystem
+
+This repository contains two powerful AI systems:
+
+## 💹 Pinnacle AI - Ultimate Trading Bot
 
 **The Absolute Pinnacle of Automated Trading Technology**
 
 A self-optimizing, self-healing, AI-powered trading machine that represents the absolute pinnacle of automated trading technology.
+
+## 🧠 Pinnacle AI - General Purpose AI
+
+**The Absolute Pinnacle of Artificial Intelligence**
+
+A neurosymbolic, self-evolving, hyper-modal AI system with specialized agents. See [README_PINNACLE_AI.md](README_PINNACLE_AI.md) for details.
+
+---
+
+## Quick Links
+
+- [General AI Documentation](docs/)
+- [Trading Bot Documentation](#-pinnacle-ai---ultimate-trading-bot) (below)
+- [Contributing](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Community Guidelines](COMMUNITY.md)
+
+---
+
+# 💹 Pinnacle AI - Ultimate Trading Bot
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
