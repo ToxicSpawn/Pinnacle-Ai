@@ -108,3 +108,8 @@ mesa>=2.1.0  # Multi-agent simulation framework
 
 # Additional ML/AI
 spacy>=3.7.0  # NLP for sentiment analysis
+
+# Multi-backend training support
+jax>=0.4.13  # JAX for high-performance ML
+flax>=0.7.2  # Flax neural network library for JAX
+optax>=0.1.7  # JAX optimization library
