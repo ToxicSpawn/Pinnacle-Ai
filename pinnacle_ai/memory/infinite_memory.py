@@ -1,23 +1,15 @@
-"""
-Infinite Context Memory System
-
-Unlike GPT-5's limited context window, this system can:
-- Store unlimited memories
-- Retrieve relevant memories instantly
-- Consolidate and compress old memories
-- Never forget important information
-
-This is the key to true AGI - unlimited context.
-"""
-
-import torch
-import torch.nn as nn
-from typing import Dict, List, Optional, Tuple
 import numpy as np
-from collections import deque
-import logging
+from typing import List, Dict, Optional
+from loguru import logger
+import json
+import os
 
-logger = logging.getLogger(__name__)
+try:
+    from sentence_transformers import SentenceTransformer
+    SENTENCE_TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    logger.warning("sentence-transformers not available. Memory will use simple embeddings.")
 
 try:
     import faiss
@@ -26,295 +18,283 @@ except ImportError:
     FAISS_AVAILABLE = False
     logger.warning("FAISS not available. Memory retrieval will be slower.")
 
+from collections import deque
 
-class InfiniteMemory(nn.Module):
+
+class InfiniteMemory:
     """
-    Infinite Context Memory System
+    Infinite Memory System with semantic retrieval
     
-    Unlike GPT-5's limited context window, this system can:
-    - Store unlimited memories
-    - Retrieve relevant memories instantly
-    - Consolidate and compress old memories
-    - Never forget important information
-    
-    This is the key to true AGI - unlimited context.
+    Features:
+    - Semantic search using embeddings
+    - Fast retrieval with FAISS
+    - Memory consolidation
+    - Importance scoring
     """
     
     def __init__(
         self,
-        hidden_size: int = 4096,
-        memory_size: int = 1_000_000,  # 1 million memories
-        retrieval_top_k: int = 100,
-        compression_ratio: float = 0.1
+        dimension: int = 384,
+        max_size: int = 100000,
+        model_name: str = "all-MiniLM-L6-v2"
     ):
-        super().__init__()
-        self.hidden_size = hidden_size
-        self.memory_size = memory_size
-        self.retrieval_top_k = retrieval_top_k
-        self.compression_ratio = compression_ratio
+        self.dimension = dimension
+        self.max_size = max_size
         
-        # Short-term memory (immediate context)
-        self.short_term = deque(maxlen=10000)
-        
-        # Long-term memory (compressed, indexed)
-        self.long_term_embeddings = np.zeros((memory_size, hidden_size), dtype=np.float32)
-        self.long_term_content = [None] * memory_size
-        self.long_term_count = 0
+        # Embedding model
+        if SENTENCE_TRANSFORMERS_AVAILABLE:
+            logger.info(f"Loading embedding model: {model_name}")
+            self.encoder = SentenceTransformer(model_name)
+        else:
+            logger.warning("Using simple embedding fallback")
+            self.encoder = None
         
         # FAISS index for fast retrieval
         if FAISS_AVAILABLE:
-            self.index = faiss.IndexFlatIP(hidden_size)
+            self.index = faiss.IndexFlatIP(dimension)
         else:
             self.index = None
         
-        # Memory encoder/decoder
-        self.encoder = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size * 2),
-            nn.GELU(),
-            nn.Linear(hidden_size * 2, hidden_size)
-        )
+        # Memory storage
+        self.memories: List[Dict] = []
         
-        self.decoder = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size * 2),
-            nn.GELU(),
-            nn.Linear(hidden_size * 2, hidden_size)
-        )
+        # Short-term buffer
+        self.short_term = deque(maxlen=1000)
         
-        # Memory consolidation network
-        self.consolidator = nn.LSTM(
-            input_size=hidden_size,
-            hidden_size=hidden_size,
-            num_layers=2,
-            batch_first=True
-        )
+        # Memory statistics
+        self.total_stored = 0
+        self.total_retrieved = 0
         
-        # Importance scorer
-        self.importance_scorer = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.GELU(),
-            nn.Linear(hidden_size // 2, 1),
-            nn.Sigmoid()
-        )
-        
-        # Episodic memory (life experiences)
-        self.episodic_memory = []
-        
-        # Semantic memory (facts and knowledge)
-        self.semantic_memory = {}
-        
-        # Procedural memory (skills and how-to)
-        self.procedural_memory = {}
-        
-        logger.info(f"Infinite Memory initialized with {memory_size:,} capacity")
+        logger.info(f"Infinite Memory initialized (capacity: {max_size:,})")
     
-    def store(self, content: str, embedding: torch.Tensor, memory_type: str = "episodic"):
-        """Store a new memory"""
-        # Encode the memory
-        encoded = self.encoder(embedding)
+    def _encode(self, text: str) -> np.ndarray:
+        """Encode text to embedding"""
+        if self.encoder:
+            embedding = self.encoder.encode(text, normalize_embeddings=True)
+            if len(embedding) != self.dimension:
+                # Resize if needed
+                if len(embedding) > self.dimension:
+                    embedding = embedding[:self.dimension]
+                else:
+                    padded = np.zeros(self.dimension)
+                    padded[:len(embedding)] = embedding
+                    embedding = padded
+            return embedding
+        else:
+            # Simple fallback
+            return np.random.randn(self.dimension).astype(np.float32)
+    
+    def store(self, text: str, context: str = "", importance: float = 0.5) -> Dict:
+        """
+        Store a memory
         
-        # Score importance
-        importance = self.importance_scorer(encoded).item()
+        Args:
+            text: Text to store
+            context: Additional context
+            importance: Importance score (0-1)
         
-        # Store in short-term memory
-        self.short_term.append({
-            "content": content,
-            "embedding": encoded.detach().cpu().numpy(),
+        Returns:
+            Storage confirmation
+        """
+        # Create embedding
+        embedding = self._encode(text)
+        
+        # Create memory object
+        memory = {
+            "id": len(self.memories),
+            "text": text,
+            "context": context,
             "importance": importance,
-            "timestamp": len(self.short_term),
-            "type": memory_type
-        })
-        
-        # If important enough, store in long-term memory
-        if importance > 0.5:
-            self._store_long_term(content, encoded, memory_type)
-        
-        # Consolidate if short-term is full
-        if len(self.short_term) >= 9000:
-            self._consolidate_memories()
-    
-    def _store_long_term(self, content: str, embedding: torch.Tensor, memory_type: str):
-        """Store in long-term memory with FAISS indexing"""
-        if self.long_term_count >= self.memory_size:
-            self._compress_old_memories()
-        
-        embedding_np = embedding.detach().cpu().numpy().flatten()
-        if embedding_np.shape[0] != self.hidden_size:
-            # Resize if needed
-            if embedding_np.shape[0] > self.hidden_size:
-                embedding_np = embedding_np[:self.hidden_size]
-            else:
-                padded = np.zeros(self.hidden_size)
-                padded[:embedding_np.shape[0]] = embedding_np
-                embedding_np = padded
-        
-        self.long_term_embeddings[self.long_term_count] = embedding_np
-        self.long_term_content[self.long_term_count] = {
-            "content": content,
-            "type": memory_type
+            "access_count": 0,
+            "embedding": embedding
         }
-        self.long_term_count += 1
         
-        # Update FAISS index
+        # Add to index
         if self.index is not None:
-            self.index.add(embedding_np.reshape(1, -1))
-    
-    def retrieve(self, query: torch.Tensor, top_k: Optional[int] = None) -> List[Dict]:
-        """Retrieve relevant memories"""
-        top_k = top_k or self.retrieval_top_k
+            self.index.add(embedding.reshape(1, -1).astype(np.float32))
         
-        if self.long_term_count == 0:
+        # Store memory
+        self.memories.append(memory)
+        self.short_term.append(memory)
+        self.total_stored += 1
+        
+        # Consolidate if needed
+        if len(self.memories) > self.max_size:
+            self._consolidate()
+        
+        return {"status": "stored", "id": memory["id"]}
+    
+    def retrieve(self, query: str, top_k: int = 5) -> List[Dict]:
+        """
+        Retrieve relevant memories
+        
+        Args:
+            query: Query text
+            top_k: Number of memories to retrieve
+        
+        Returns:
+            List of relevant memories
+        """
+        if len(self.memories) == 0:
             return []
         
-        query_np = query.detach().cpu().numpy().flatten()
-        if query_np.shape[0] != self.hidden_size:
-            if query_np.shape[0] > self.hidden_size:
-                query_np = query_np[:self.hidden_size]
-            else:
-                padded = np.zeros(self.hidden_size)
-                padded[:query_np.shape[0]] = query_np
-                query_np = padded
+        # Create query embedding
+        query_embedding = self._encode(query)
         
-        query_np = query_np.reshape(1, -1)
-        
-        # Search FAISS index
-        if self.index is not None and self.long_term_count > 0:
-            distances, indices = self.index.search(query_np, min(top_k, self.long_term_count))
-            
-            results = []
-            for i, idx in enumerate(indices[0]):
-                if idx < self.long_term_count and self.long_term_content[idx] is not None:
-                    results.append({
-                        "content": self.long_term_content[idx]["content"],
-                        "type": self.long_term_content[idx]["type"],
-                        "relevance": float(distances[0][i])
-                    })
-            
-            return results
-        else:
-            # Fallback: brute force search
-            results = []
-            query_flat = query_np.flatten()
-            for i in range(min(top_k, self.long_term_count)):
-                if self.long_term_content[i] is not None:
-                    similarity = np.dot(query_flat, self.long_term_embeddings[i])
-                    results.append({
-                        "content": self.long_term_content[i]["content"],
-                        "type": self.long_term_content[i]["type"],
-                        "relevance": float(similarity)
-                    })
-            results.sort(key=lambda x: x["relevance"], reverse=True)
-            return results[:top_k]
-    
-    def _consolidate_memories(self):
-        """Consolidate short-term memories into long-term (like sleep)"""
-        logger.info("Consolidating memories (dream state)...")
-        
-        # Get all short-term memories
-        memories = list(self.short_term)
-        
-        # Sort by importance
-        memories.sort(key=lambda x: x["importance"], reverse=True)
-        
-        # Keep top 50% in long-term
-        for memory in memories[:len(memories) // 2]:
-            embedding = torch.tensor(memory["embedding"])
-            self._store_long_term(
-                memory["content"],
-                embedding,
-                memory["type"]
+        # Search
+        if self.index is not None and self.index.ntotal > 0:
+            k = min(top_k, self.index.ntotal)
+            distances, indices = self.index.search(
+                query_embedding.reshape(1, -1).astype(np.float32),
+                k
             )
+            
+            # Get memories
+            results = []
+            for dist, idx in zip(distances[0], indices[0]):
+                if idx < len(self.memories):
+                    memory = self.memories[idx]
+                    memory["access_count"] += 1
+                    results.append({
+                        "text": memory["text"],
+                        "context": memory["context"],
+                        "relevance": float(dist),
+                        "importance": memory["importance"]
+                    })
+        else:
+            # Fallback: simple text matching
+            results = []
+            query_lower = query.lower()
+            for memory in self.memories:
+                if query_lower in memory["text"].lower():
+                    results.append({
+                        "text": memory["text"],
+                        "context": memory["context"],
+                        "relevance": 0.5,
+                        "importance": memory["importance"]
+                    })
+            results = results[:top_k]
         
-        # Clear short-term
-        self.short_term.clear()
-        logger.info("Memory consolidation complete")
+        self.total_retrieved += len(results)
+        return results
     
-    def _compress_old_memories(self):
-        """Compress old memories to make room for new ones"""
-        logger.info("Compressing old memories...")
+    def _consolidate(self):
+        """Consolidate memories by removing less important ones"""
+        logger.info("Consolidating memories...")
         
-        # Keep only the most important memories
-        keep_count = int(self.memory_size * (1 - self.compression_ratio))
-        
-        # Score all memories
-        scores = []
-        for i in range(self.long_term_count):
-            embedding = torch.tensor(self.long_term_embeddings[i])
-            score = self.importance_scorer(embedding).item()
-            scores.append((i, score))
-        
-        # Sort by importance
-        scores.sort(key=lambda x: x[1], reverse=True)
+        # Sort by importance and access count
+        scored = [(i, m["importance"] + m["access_count"] * 0.01)
+                  for i, m in enumerate(self.memories)]
+        scored.sort(key=lambda x: x[1], reverse=True)
         
         # Keep top memories
-        keep_indices = [s[0] for s in scores[:keep_count]]
+        keep_count = int(self.max_size * 0.8)
+        keep_indices = set([s[0] for s in scored[:keep_count]])
         
-        # Rebuild memory
-        new_embeddings = np.zeros_like(self.long_term_embeddings)
-        new_content = [None] * self.memory_size
+        # Rebuild
+        new_memories = []
+        new_embeddings = []
         
-        for new_idx, old_idx in enumerate(keep_indices):
-            new_embeddings[new_idx] = self.long_term_embeddings[old_idx]
-            new_content[new_idx] = self.long_term_content[old_idx]
+        for i, memory in enumerate(self.memories):
+            if i in keep_indices:
+                memory["id"] = len(new_memories)
+                new_memories.append(memory)
+                new_embeddings.append(memory["embedding"])
         
-        self.long_term_embeddings = new_embeddings
-        self.long_term_content = new_content
-        self.long_term_count = keep_count
-        
-        # Rebuild FAISS index
+        # Rebuild index
         if FAISS_AVAILABLE:
-            self.index = faiss.IndexFlatIP(self.hidden_size)
-            if self.long_term_count > 0:
-                self.index.add(self.long_term_embeddings[:self.long_term_count])
+            self.index = faiss.IndexFlatIP(self.dimension)
+            if new_embeddings:
+                self.index.add(np.array(new_embeddings).astype(np.float32))
         
-        logger.info(f"Compressed to {keep_count:,} memories")
+        self.memories = new_memories
+        logger.info(f"Consolidated to {len(self.memories):,} memories")
     
-    def dream(self, duration: int = 100) -> List[str]:
+    def size(self) -> int:
+        """Get number of stored memories"""
+        return len(self.memories)
+    
+    def clear(self):
+        """Clear all memories"""
+        if FAISS_AVAILABLE:
+            self.index = faiss.IndexFlatIP(self.dimension)
+        self.memories = []
+        self.short_term.clear()
+    
+    def dream(self, duration: int = 50) -> List[str]:
         """
-        Dream state - generate novel ideas by recombining memories
+        Dream mode - generate novel combinations
         
-        This is where true creativity happens - the AI "dreams"
-        by randomly activating and recombining memories.
+        Args:
+            duration: Number of dream iterations
+        
+        Returns:
+            List of dream insights
         """
+        if len(self.memories) < 2:
+            return []
+        
         dreams = []
-        
-        if self.long_term_count < 2:
-            return dreams
-        
         for _ in range(duration):
-            # Randomly select memories
-            idx1, idx2 = np.random.choice(self.long_term_count, 2, replace=False)
+            # Random memory combination
+            idx1, idx2 = np.random.choice(len(self.memories), 2, replace=False)
+            m1, m2 = self.memories[idx1], self.memories[idx2]
             
-            # Combine embeddings
-            combined = (
-                self.long_term_embeddings[idx1] +
-                self.long_term_embeddings[idx2]
-            ) / 2
-            
-            # Generate dream content
-            dream_embedding = torch.tensor(combined)
-            similar = self.retrieve(dream_embedding, top_k=3)
-            
-            if similar:
-                dream_content = f"Dream: {similar[0]['content']} + {similar[1]['content'] if len(similar) > 1 else ''}"
-                dreams.append(dream_content)
+            # Create dream insight
+            dream = f"Connection: '{m1['text'][:50]}...' relates to '{m2['text'][:50]}...'"
+            dreams.append(dream)
         
         return dreams
     
-    def forget(self, content: str):
-        """Selectively forget a memory (useful for unlearning)"""
-        # Find and remove the memory
-        for i in range(self.long_term_count):
-            if self.long_term_content[i] and self.long_term_content[i]["content"] == content:
-                self.long_term_content[i] = None
-                logger.info(f"Forgot memory: {content[:50]}...")
-                break
-    
-    def get_statistics(self) -> Dict:
-        """Get memory statistics"""
-        return {
-            "short_term_count": len(self.short_term),
-            "long_term_count": self.long_term_count,
-            "capacity": self.memory_size,
-            "utilization": self.long_term_count / self.memory_size * 100 if self.memory_size > 0 else 0
+    def save(self, path: str):
+        """Save memories to disk"""
+        data = {
+            "memories": [
+                {k: v for k, v in m.items() if k != "embedding"}
+                for m in self.memories
+            ],
+            "stats": {
+                "total_stored": self.total_stored,
+                "total_retrieved": self.total_retrieved
+            }
         }
-
+        
+        os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+        
+        # Save embeddings separately
+        if self.memories:
+            embeddings = np.array([m["embedding"] for m in self.memories])
+            np.save(path.replace(".json", "_embeddings.npy"), embeddings)
+    
+    def load(self, path: str):
+        """Load memories from disk"""
+        with open(path, "r") as f:
+            data = json.load(f)
+        
+        # Load embeddings
+        embedding_path = path.replace(".json", "_embeddings.npy")
+        if os.path.exists(embedding_path):
+            embeddings = np.load(embedding_path)
+        else:
+            embeddings = None
+        
+        # Rebuild
+        self.memories = []
+        if FAISS_AVAILABLE:
+            self.index = faiss.IndexFlatIP(self.dimension)
+        
+        for i, m in enumerate(data["memories"]):
+            if embeddings is not None and i < len(embeddings):
+                m["embedding"] = embeddings[i]
+            else:
+                m["embedding"] = self._encode(m["text"])
+            self.memories.append(m)
+        
+        if FAISS_AVAILABLE and len(self.memories) > 0:
+            embeddings_array = np.array([m["embedding"] for m in self.memories])
+            self.index.add(embeddings_array.astype(np.float32))
+        
+        self.total_stored = data["stats"]["total_stored"]
+        self.total_retrieved = data["stats"]["total_retrieved"]

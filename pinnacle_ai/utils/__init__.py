@@ -1,4 +1,5 @@
 """
-Utility functions for Pinnacle AI
+Utility functions
 """
 
+__all__ = []

@@ -1,20 +1,24 @@
 """
-Pinnacle AI - Advanced ML Framework with Multi-Backend Support
+Pinnacle-AI: The Ultimate AGI System
+====================================
+
+A Singularity-Class AI featuring:
+- Infinite Memory
+- Causal Reasoning
+- World Simulation
+- Self-Evolution
+- Swarm Intelligence
+- Emotional Consciousness
+
+Author: ToxicSpawn
+Version: 1.0.0
+License: MIT
 """
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
+__author__ = "ToxicSpawn"
 
-from pinnacle_ai.core.models.mistral import MistralConfig, MistralForCausalLM
-from pinnacle_ai.core.distributed import DistributedTrainer
-from pinnacle_ai.core.optim import OptimizerBuilder, SchedulerBuilder
-from pinnacle_ai.data import DataPipeline
+from pinnacle_ai.core.config import PinnacleConfig
+from pinnacle_ai.core.model import PinnacleAI
 
-__all__ = [
-    'MistralConfig',
-    'MistralForCausalLM',
-    'DistributedTrainer',
-    'OptimizerBuilder',
-    'SchedulerBuilder',
-    'DataPipeline',
-]
-
+__all__ = ["PinnacleConfig", "PinnacleAI"]

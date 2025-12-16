@@ -1,8 +1,7 @@
 """
-API and deployment components
+Pinnacle-AI API
 """
 
-from pinnacle_ai.api.server import app
+from .app import app
 
-__all__ = ['app']
-
+__all__ = ["app"]

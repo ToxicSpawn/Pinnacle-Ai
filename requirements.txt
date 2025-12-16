@@ -1,115 +1,45 @@
-ccxt
-aiohttp
-fastapi
-uvicorn
-pydantic
-python-dotenv
-PyYAML
-numpy
-pandas
-scipy
-prometheus-client
-jinja2
-pytest
-ruff
-flake8
-xgboost
-scikit-learn
-joblib
-openai
-
-# Fine-tuned LLM dependencies
-transformers>=4.35.0
+# Core ML
 torch>=2.0.0
-peft>=0.7.0
-trl>=0.7.0
+transformers>=4.36.0
+accelerate>=0.25.0
 bitsandbytes>=0.41.0
-accelerate>=0.24.0
-sentencepiece
-protobuf
+sentencepiece>=0.1.99
+protobuf>=4.25.0
 
-# RAG dependencies
-langchain>=0.1.0
-faiss-cpu>=1.7.4  # Use faiss-gpu if you have CUDA
-chromadb>=0.4.0
-pypdf>=3.0.0
-tiktoken
+# Vector Database
+faiss-cpu>=1.7.4
+numpy>=1.24.0
 
-# Embeddings
+# API
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+python-multipart>=0.0.6
+
+# Scientific
+scipy>=1.11.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
+networkx>=3.2.0
+
+# NLP
 sentence-transformers>=2.2.0
 
-# Security
-guardrails-ai>=0.4.0
+# Utilities
+loguru>=0.7.0
+tqdm>=4.66.0
+python-dotenv>=1.0.0
+aiofiles>=23.2.0
+httpx>=0.25.0
 
-# Monitoring
-wandb>=0.16.0
-mlflow>=2.8.0
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
 
-# UI
-gradio>=4.0.0
-streamlit>=1.28.0
+# Optional: Quantum (comment out if not needed)
+# qiskit>=0.45.0
+# pennylane>=0.33.0
 
-# Voice/Transcription
-openai-whisper>=20231117
-
-# Caching
-redis>=5.0.0
-
-# Rate limiting
-slowapi>=0.1.9
-
-# Additional utilities
-requests>=2.31.0
-
-# Phase 1: Multi-Exchange & WebSocket Support
-websockets>=12.0  # WebSocket support for real-time data
-cryptography>=41.0.0  # API key encryption
-
-# Phase 2+: Complete Overhaul Dependencies
-# Machine Learning
-tensorflow>=2.12.0  # LSTM price prediction
-keras>=2.12.0  # Deep learning framework
-
-# Backtesting
-backtrader>=1.9.76.123  # Backtesting engine
-
-# Telegram Alerts
-python-telegram-bot>=20.3  # Telegram notifications
-
-# Tax Reporting (optional)
-# koinly>=0.1.5  # Uncomment if using Koinly API
-
-# Genetic Algorithm Optimization (optional)
-deap>=1.3.3  # Genetic algorithms for strategy optimization
-
-# Advanced HFT Features
-cvxpy>=1.3.0  # Portfolio optimization
-feedparser>=6.0.0  # RSS feed parsing
-aiohttp>=3.9.0  # Async HTTP client
-tweepy>=4.14.0  # Twitter API (optional)
-praw>=7.7.0  # Reddit API (optional)
-transformers>=4.35.0  # Sentiment analysis (already included but ensuring version)
-streamlit>=1.28.0  # Advanced dashboard (already included)
-plotly>=5.17.0  # Interactive charts
-
-# Self-healing and monitoring
-psutil>=5.9.0  # System monitoring
-
-# Genetic algorithms
-deap>=1.3.3  # Already included but ensuring version
-
-# Ultimate Bot: Pinnacle Features
-# Quantum computing (optional)
-qiskit>=0.45.0  # Quantum computing framework
-qiskit-aer>=0.13.0  # Quantum simulator
-
-# Multi-agent systems
-mesa>=2.1.0  # Multi-agent simulation framework
-
-# Additional ML/AI
-spacy>=3.7.0  # NLP for sentiment analysis
-
-# Multi-backend training support
-jax>=0.4.13  # JAX for high-performance ML
-flax>=0.7.2  # Flax neural network library for JAX
-optax>=0.1.7  # JAX optimization library
+# Paper Generation
+fpdf2>=2.7.0
+arxiv>=2.0.0

@@ -1,9 +1,9 @@
 """
-Emotional Consciousness System
-Subjective experience and emotional intelligence.
+Consciousness Module
+Global Workspace Theory implementation
 """
 
-from .emotional_consciousness import EmotionalConsciousness, EmotionalState
+from .global_workspace import GlobalWorkspace
+from .emotional import EmotionalSystem
 
-__all__ = ["EmotionalConsciousness", "EmotionalState"]
-
+__all__ = ["GlobalWorkspace", "EmotionalSystem"]

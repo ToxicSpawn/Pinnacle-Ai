@@ -1,9 +1,7 @@
 """
-Multi-Agent Swarm Intelligence
-Distributed superintelligence through collaboration.
+Swarm Intelligence System
 """
 
 from .swarm_intelligence import SwarmIntelligence, SwarmAgent
 
 __all__ = ["SwarmIntelligence", "SwarmAgent"]
-

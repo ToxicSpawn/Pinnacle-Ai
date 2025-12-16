@@ -1,9 +1,7 @@
 """
 Causal Reasoning Engine
-True understanding through cause and effect.
 """
 
-from .causal_engine import CausalReasoningEngine
+from .causal_engine import CausalEngine
 
-__all__ = ["CausalReasoningEngine"]
-
+__all__ = ["CausalEngine"]

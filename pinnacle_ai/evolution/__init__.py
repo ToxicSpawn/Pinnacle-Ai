@@ -1,9 +1,7 @@
 """
-Self-Replication System
-Exponential intelligence growth through self-improvement.
+Self-Evolution System
 """
 
-from .self_replication import SelfReplicationSystem, GeneticCode
+from .self_evolution import SelfEvolution, GeneticCode
 
-__all__ = ["SelfReplicationSystem", "GeneticCode"]
-
+__all__ = ["SelfEvolution", "GeneticCode"]
