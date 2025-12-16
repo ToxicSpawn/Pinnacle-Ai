@@ -16,19 +16,15 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # Virtual Environment
 venv/
 env/
 ENV/
-env.bak/
-venv.bak/
+.venv
 
 # IDE
 .vscode/
@@ -38,20 +34,10 @@ venv.bak/
 *~
 .DS_Store
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
-
 # Logs
-logs/
 *.log
-
-# Configuration (keep examples)
-config/settings.yaml
-!config/settings.yaml.example
+logs/
+*.log.*
 
 # Data
 data/
@@ -59,34 +45,75 @@ data/
 *.sqlite
 *.sqlite3
 
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb
+# Models
+models/
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pb
+
+# Cache
+.cache/
+*.cache
+__pycache__/
+
+# Configuration (with secrets)
+config/settings.yaml
+!config/settings.yaml.example
 
 # Environment variables
 .env
 .env.local
 
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Docker
+.dockerignore
+
 # OS
 Thumbs.db
 .DS_Store
 
-# Model files
-*.pt
-*.pth
-*.h5
-*.ckpt
-models/
-
 # Temporary files
-tmp/
-temp/
 *.tmp
+*.temp
+*.bak
+*.swp
 
-# API keys and secrets
-secrets/
-*.key
-*.pem
+# AI offspring
+ai_offspring/
+offspring_*/
 
-# Docker
-.dockerignore
+# Benchmark results
+benchmark_results/
+*.json
+
+# Learning data
+learning_data/
+
+# Audit logs
+audit.log
+*.audit.log
+
+# Support requests
+support/
+
+# Monitoring data
+monitoring/
+prometheus_data/
+grafana_data/

@@ -1,48 +1,52 @@
 version: '3.8'
 
 services:
-  inference-server:
+  pinnacle-ai:
     build: .
     ports:
-      - "8000:8000"  # FastAPI inference server
-      - "7860:7860"  # Gradio UI
-    environment:
-      - LLM_MODEL_NAME=${LLM_MODEL_NAME:-mistralai/Mistral-7B-v0.1}
-      - LLM_MODEL_PATH=${LLM_MODEL_PATH:-}
-      - RAG_PERSIST_DIR=/app/rag_store
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - USE_WANDB=${USE_WANDB:-false}
-      - USE_PROMETHEUS=true
+      - "8000:8000"  # API
+      - "7860:7860"  # Web UI
     volumes:
-      - ./models:/app/models
-      - ./rag_store:/app/rag_store
+      - ./config:/app/config
+      - ./data:/app/data
       - ./logs:/app/logs
-    depends_on:
-      - redis
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+      - NUM_WORKERS=4
     deploy:
       resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+          # Uncomment for GPU support
+          # gpus: all
         reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+          cpus: '2'
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
+  # Optional: Redis for caching and memory
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
 
+  # Optional: Monitoring
   prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -53,16 +57,13 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
-    depends_on:
-      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     restart: unless-stopped
 
 volumes:
   redis_data:
   prometheus_data:
   grafana_data:
-

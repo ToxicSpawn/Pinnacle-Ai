@@ -1,41 +1,62 @@
-FROM python:3.10-slim
+# Multi-stage Dockerfile for Pinnacle AI
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Stage 1: Build stage
+FROM python:3.11-slim as builder
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and set working directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Stage 2: Runtime stage
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH=/root/.local/bin:$PATH
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Create and set working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy installed application from builder
+COPY --from=builder /root/.local /root/.local
 
 # Copy application code
 COPY . .
 
-# Create directories for models and data
-RUN mkdir -p /app/models /app/rag_store /app/logs
-
-# Environment variables
-ENV PYTHONUNBUFFERED=1
-ENV BOT_BASE_DIR=/app
+# Create necessary directories
+RUN mkdir -p logs data/models data/cache
 
 # Expose ports
-# 8000: FastAPI inference server
-# 7860: Gradio UI
-# 8001: Prometheus metrics
-EXPOSE 8000 7860 8001
+EXPOSE 8000  # API
+EXPOSE 7860  # Web UI
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/api/v1/status || exit 1
 
-# Default command (can be overridden)
-CMD ["python", "-m", "ai_engine.inference_server"]
-
+# Command to run the application
+CMD ["python", "src/main.py", "--api"]
