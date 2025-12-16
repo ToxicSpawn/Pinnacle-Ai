@@ -1,3 +1,13 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Configuration (with secrets)
+config/settings.yaml
+config/settings.*.yaml
+!config/settings.yaml.example
+
 # Python
 __pycache__/
 *.py[cod]
