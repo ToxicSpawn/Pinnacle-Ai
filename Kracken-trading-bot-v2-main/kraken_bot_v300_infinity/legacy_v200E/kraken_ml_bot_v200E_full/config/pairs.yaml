@@ -1,5 +1,0 @@
-pairs:
-  - symbol: "SOL/AUD"
-    enabled: true
-  - symbol: "BTC/AUD"
-    enabled: false   # turn on later if you want
