@@ -1,78 +1,248 @@
 # Pinnacle AI Configuration
 
+# Core Configuration
+core:
+  # LLM Configuration
+  llm_provider: "openai"  # or "ollama", "mistral", etc.
+  openai_model: "gpt-4o"
+  ollama_model: "llama3"
+  temperature: 0.7
+  max_tokens: 2048
+  top_p: 1.0
+  frequency_penalty: 0.0
+  presence_penalty: 0.0
+
+  # Embeddings Configuration
+  embeddings_provider: "openai"
+  embeddings_model: "text-embedding-ada-002"
+
+  # API Keys
+  openai_api_key: "your-openai-api-key"
+  serper_api_key: "your-serper-api-key"
+  tavily_api_key: "your-tavily-api-key"
+  stable_diffusion_api_key: "your-stable-diffusion-api-key"
+  suno_api_key: "your-suno-api-key"
+  elevenlabs_api_key: "your-elevenlabs-api-key"
+
+  # Logging Configuration
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "pinnacle_ai.log"
+
 # Agent Configuration
 agents:
+  # Available agents
   available_agents:
-    - planner
-    - researcher
-    - coder
-    - creative
-    - robotic
-    - scientist
-    - philosopher
-    - meta_agent
+    - "planner"
+    - "researcher"
+    - "coder"
+    - "creative"
+    - "robotic"
+    - "scientist"
+    - "philosopher"
+    - "meta_agent"
 
-# Neurosymbolic Configuration
-neurosymbolic:
-  enabled: true
-  logic_engine:
-    max_rules: 1000
-  causal_graph:
-    max_nodes: 5000
+  # Agent-specific configurations
+  planner:
+    temperature: 0.5
+    max_tokens: 1024
+    planning_depth: 3  # How many levels deep to plan
 
-# Hyper-Modal Configuration
-hyper_modal:
-  enabled: true
-  supported_modalities:
-    - text
-    - image
-    - audio
-    - video
+  researcher:
+    temperature: 0.6
+    max_tokens: 1536
+    search_tool: "serper"  # or "tavily", "google"
+    max_search_results: 5
+    include_raw_results: false
+
+  coder:
+    temperature: 0.4
+    max_tokens: 2048
+    execution_environment: "docker"  # or "replit", "local"
+    available_libraries:
+      - "numpy"
+      - "pandas"
+      - "requests"
+      - "beautifulsoup4"
+      - "matplotlib"
+      - "scikit-learn"
+      - "tensorflow"
+      - "pytorch"
+    timeout: 30  # seconds
+
+  creative:
+    temperature: 0.8
+    max_tokens: 1024
+    image_model: "stable-diffusion"  # or "dalle", "midjourney"
+    audio_model: "suno"  # or "elevenlabs"
+    default_style: "realistic"
+    max_image_size: 1024  # pixels
+
+  robotic:
+    simulation_mode: true  # Set to false for real robot control
+    capabilities:
+      movement: true
+      manipulation: true
+      sensing:
+        - "vision"
+        - "touch"
+        - "proprioception"
+    simulation_environment: "pybullet"  # or "gazebo", "mujoco"
+
+  scientist:
+    temperature: 0.6
+    max_tokens: 2048
+    default_domain: "general"
+    research_depth: 3  # How many sources to consult
+    hypothesis_generation: "auto"  # or "manual"
+
+  philosopher:
+    temperature: 0.7
+    max_tokens: 1536
+    reasoning_depth: 5  # Number of reasoning steps
+    include_ethics: true
+
+  meta_agent:
+    temperature: 0.5
+    max_tokens: 1024
+    planning_strategy: "adaptive"  # or "conservative", "aggressive"
+    learning_rate: 0.1  # How quickly to adapt
+
+# Tool Configuration
+tools:
+  # Search tools
+  search:
+    default_tool: "serper"
+    serper:
+      enabled: true
+      timeout: 10
+    tavily:
+      enabled: true
+      timeout: 10
+    google:
+      enabled: false
+      timeout: 15
+
+  # Code execution
+  code_execution:
+    environment: "docker"  # or "replit", "local"
+    timeout: 30  # seconds
+    max_memory: 2048  # MB
+    docker_image: "python:3.11-slim"
+
+  # Image generation
+  image_generation:
+    default_model: "stable-diffusion"
+    stable_diffusion:
+      enabled: true
+      style: "realistic"
+      steps: 50
+      guidance_scale: 7.5
+    dalle:
+      enabled: false
+      style: "vivid"
+    midjourney:
+      enabled: false
+      style: "standard"
+
+  # Audio generation
+  audio_generation:
+    default_model: "suno"
+    suno:
+      enabled: true
+      style: "ambient"
+      duration: 30  # seconds
+    elevenlabs:
+      enabled: true
+      voice: "default"
+      stability: 0.5
+      similarity_boost: 0.75
 
 # Memory Configuration
 memory:
-  enabled: true
-  max_memories: 10000
-  association_strength: 0.7
+  # Entangled memory
+  entangled:
+    memory_size: 10000
+    embedding_dim: 1024
+    similarity_threshold: 0.85
+    max_connections: 100
 
-# Self-Evolution Configuration
-self_evolution:
-  enabled: true
-  improvement_interval: 3600  # seconds
-  auto_optimize: true
+  # Episodic memory
+  episodic:
+    max_events: 10000
+    retention_policy: "lru"  # or "fifo", "priority"
+    priority_weights:
+      success: 2.0
+      failure: 3.0
+      high_quality: 1.5
 
-# LLM Configuration
-llm:
-  provider: "openai"  # or "anthropic", "local", etc.
-  models:
-    - "gpt-4"
-    - "gpt-3.5-turbo"
-  api_key: "your_api_key_here"
-  temperature: 0.7
-  max_tokens: 2000
+  # Procedural memory
+  procedural:
+    max_procedures: 1000
+    skill_retention: 0.9  # Probability of retaining a skill
 
-# Logging Configuration
-logging:
-  level: "INFO"
-  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  file: "logs/pinnacle_ai.log"
+# Self-Improvement Configuration
+self_improvement:
+  active: true
+  interval: 10  # Number of tasks between self-improvement cycles
+  components:
+    - "agents"
+    - "neurosymbolic"
+    - "hyper_modal"
+    - "quantum"
+    - "memory"
+    - "orchestration"
+  improvement_strategy: "balanced"  # or "aggressive", "conservative"
+  max_improvement_cycles: 5  # Maximum consecutive improvement cycles
 
-# Tools Configuration
-tools:
-  web_search:
-    enabled: true
-    provider: "google"  # or "bing", "duckduckgo"
-    api_key: "your_api_key_here"
-  code_executor:
-    enabled: true
-    sandbox: true
-    timeout: 30
-  image_gen:
-    enabled: true
-    provider: "openai"  # or "stability", "midjourney"
-    api_key: "your_api_key_here"
-  audio_gen:
-    enabled: true
-    provider: "elevenlabs"  # or "openai"
-    api_key: "your_api_key_here"
+# Neurosymbolic Configuration
+neurosymbolic:
+  logic_engine:
+    optimization_level: "high"
+    max_rules: 1000
+    rule_learning_rate: 0.1
+  causal_graph:
+    max_nodes: 1000
+    max_edges: 5000
+    learning_rate: 0.05
 
+# Hyper-Modal Configuration
+hyper_modal:
+  unified_encoder:
+    text_model: "mistralai/Mistral-7B-v0.1"
+    vision_model: "google/vit-base-patch16-224"
+    audio_model: "facebook/wav2vec2-base-960h"
+    cross_modal_attention: true
+    fine_tuning: false
+  sensory_fusion:
+    input_dim: 1024
+    hidden_dim: 2048
+    output_dim: 1024
+    fusion_strategy: "attention"  # or "concatenation", "gating"
+  output_synthesizer:
+    text_model: "mistralai/Mistral-7B-v0.1"
+    vision_model: "stabilityai/stable-diffusion-2-1"
+    audio_model: "facebook/musicgen-small"
+    max_output_length: 2048
+
+# Quantum Configuration
+quantum:
+  quantum_optimizer:
+    optimization_method: "quantum_inspired"  # or "quantum" when available
+    max_iterations: 100
+    tolerance: 0.001
+  parallel_processor:
+    max_workers: 8  # Number of parallel workers
+    worker_type: "thread"  # or "process"
+
+# Deployment Configuration
+deployment:
+  mode: "local"  # or "cloud", "edge"
+  cloud:
+    provider: "aws"  # or "gcp", "azure"
+    region: "us-west-2"
+    instance_type: "g4dn.xlarge"  # GPU instance
+  edge:
+    device: "raspberry_pi"  # or "jetson", "coral"
+    optimization_level: "high"  # or "medium", "low"

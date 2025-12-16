@@ -3,7 +3,8 @@ OmniAIOrchestrator - The core orchestration system for Pinnacle AI
 """
 
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any
+import importlib
 
 from src.core.neurosymbolic.logic_engine import LogicEngine
 from src.core.neurosymbolic.causal_graph import CausalGraph
@@ -11,7 +12,6 @@ from src.core.self_evolution.meta_learner import MetaLearner
 from src.core.hyper_modal.unified_encoder import UnifiedEncoder
 from src.core.memory.entangled_memory import EntangledMemory
 from src.models.llm_manager import LLMManager
-from src.tools.config_loader import load_config
 
 class OmniAIOrchestrator:
     """The core orchestration system that coordinates all components of Pinnacle AI."""
@@ -32,12 +32,11 @@ class OmniAIOrchestrator:
             # Initialize self-evolution components
             self.meta_learner = MetaLearner(config.get("self_evolution", {}))
 
-            # Initialize agents
+            # Initialize agents using dynamic imports to avoid circular imports
             self.agents = self._initialize_agents()
 
             # Get meta-agent reference
             self.meta_agent = self.agents.get("meta_agent")
-
             if not self.meta_agent:
                 raise ValueError("MetaAgent not properly initialized")
 
@@ -48,76 +47,60 @@ class OmniAIOrchestrator:
             raise
 
     def _initialize_agents(self) -> Dict[str, Any]:
-        """Initialize all available agents."""
-        from src.agents.planner import PlannerAgent
-        from src.agents.researcher import ResearcherAgent
-        from src.agents.coder import CoderAgent
-        from src.agents.creative import CreativeAgent
-        from src.agents.robotic import RoboticAgent
-        from src.agents.scientist import ScientistAgent
-        from src.agents.philosopher import PhilosopherAgent
-        from src.agents.meta_agent import MetaAgent
-
+        """Initialize all available agents using dynamic imports."""
         agents = {}
         available_agents = self.config.get("agents", {}).get("available_agents", [])
 
+        # Map agent names to their module paths
+        agent_modules = {
+            "planner": "src.agents.planner",
+            "researcher": "src.agents.researcher",
+            "coder": "src.agents.coder",
+            "creative": "src.agents.creative",
+            "robotic": "src.agents.robotic",
+            "scientist": "src.agents.scientist",
+            "philosopher": "src.agents.philosopher",
+            "meta_agent": "src.agents.meta_agent"
+        }
+
         for agent_name in available_agents:
             try:
+                if agent_name not in agent_modules:
+                    self.logger.warning(f"Unknown agent: {agent_name}")
+                    continue
+
+                # Dynamically import the agent module
+                module = importlib.import_module(agent_modules[agent_name])
+                agent_class = getattr(module, f"{agent_name.capitalize()}Agent")
+
+                # Get agent configuration
                 agent_config = self.config.get("agents", {}).get(agent_name, {})
-                if agent_name == "planner":
-                    agents[agent_name] = PlannerAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
-                elif agent_name == "researcher":
-                    agents[agent_name] = ResearcherAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
-                elif agent_name == "coder":
-                    agents[agent_name] = CoderAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
-                elif agent_name == "creative":
-                    agents[agent_name] = CreativeAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
-                elif agent_name == "robotic":
-                    agents[agent_name] = RoboticAgent(
-                        self.logic_engine,
-                        agent_config
-                    )
-                elif agent_name == "scientist":
-                    agents[agent_name] = ScientistAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
-                elif agent_name == "philosopher":
-                    agents[agent_name] = PhilosopherAgent(
-                        self.llm_manager,
-                        agent_config,
-                        self.logic_engine
-                    )
+
+                # Initialize the agent with appropriate parameters
+                if agent_name == "robotic":
+                    agents[agent_name] = agent_class(self.logic_engine, agent_config)
                 elif agent_name == "meta_agent":
-                    agents[agent_name] = MetaAgent(
+                    agents[agent_name] = agent_class(
                         self,
                         self.logic_engine,
                         self.meta_learner,
                         self.entangled_memory
                     )
+                else:
+                    agents[agent_name] = agent_class(
+                        self.llm_manager,
+                        agent_config,
+                        self.logic_engine
+                    )
 
                 self.logger.info(f"Initialized agent: {agent_name}")
 
+            except ImportError as e:
+                self.logger.error(f"Failed to import agent {agent_name}: {str(e)}")
+            except AttributeError as e:
+                self.logger.error(f"Agent class not found for {agent_name}: {str(e)}")
             except Exception as e:
                 self.logger.error(f"Failed to initialize agent {agent_name}: {str(e)}")
-                continue
 
         return agents
 
@@ -215,7 +198,7 @@ class OmniAIOrchestrator:
             "recommendations": ["improve_agent_selection", "optimize_resource_allocation"]
         }
 
-    def _generate_orchestration_improvements(self, analysis: Dict) -> List[Dict]:
+    def _generate_orchestration_improvements(self, analysis: Dict) -> list:
         """Generate improvement suggestions for orchestration."""
         suggestions = []
 
@@ -242,7 +225,7 @@ class OmniAIOrchestrator:
 
         return suggestions
 
-    def _implement_orchestration_improvements(self, suggestions: List[Dict]) -> Dict:
+    def _implement_orchestration_improvements(self, suggestions: list) -> Dict:
         """Implement orchestration improvements."""
         results = {}
 
@@ -256,4 +239,3 @@ class OmniAIOrchestrator:
                 results["agent_selection"] = "algorithm_updated"
 
         return results
-
