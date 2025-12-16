@@ -5,7 +5,7 @@ Real-time monitoring with Streamlit and Plotly
 from __future__ import annotations
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, List, Any, Optional
 import pandas as pd
 
 logger = logging.getLogger(__name__)

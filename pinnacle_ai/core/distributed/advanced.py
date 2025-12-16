@@ -4,7 +4,9 @@ Advanced Distributed Training: Enhanced FSDP, Tensor Parallelism, Pipeline Paral
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.distributed as dist
+from torch import Tensor
 from typing import Optional, Dict, Any
 import logging
 
@@ -166,7 +168,7 @@ def create_pipeline(
     model: nn.Module,
     chunks: int = 8,
     checkpoint: str = "except_last",
-) -> Pipe:
+):
     """
     Create pipeline parallel model.
     
@@ -181,6 +183,7 @@ def create_pipeline(
     if not PIPELINE_AVAILABLE:
         raise RuntimeError("Pipeline parallelism requires torch.distributed.pipeline")
     
+    from torch.distributed.pipeline.sync import Pipe
     return Pipe(
         model,
         chunks=chunks,

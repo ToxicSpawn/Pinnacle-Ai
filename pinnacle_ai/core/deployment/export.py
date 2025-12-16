@@ -96,10 +96,10 @@ def build_tensorrt_engine(
         return False
     
     try:
-        logger = trt.Logger(trt.Logger.WARNING)
-        builder = trt.Builder(logger)
+        trt_logger = trt.Logger(trt.Logger.WARNING)
+        builder = trt.Builder(trt_logger)
         network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
-        parser = trt.OnnxParser(network, logger)
+        parser = trt.OnnxParser(network, trt_logger)
         
         # Parse ONNX model
         with open(onnx_path, "rb") as model:

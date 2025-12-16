@@ -16,37 +16,44 @@ try:
     BACKTRADER_AVAILABLE = True
 except ImportError:
     BACKTRADER_AVAILABLE = False
+    bt = None
     logger.warning("Backtrader not available. Backtesting will be disabled.")
 
 
-class RealisticBroker(bt.brokers.BackBroker):
-    """
-    Realistic broker with slippage and fees.
-    """
-    
-    def __init__(self, slippage: float = 0.001, commission: float = 0.001, **kwargs):
+if BACKTRADER_AVAILABLE:
+    class RealisticBroker(bt.brokers.BackBroker):
         """
-        Initialize realistic broker.
+        Realistic broker with slippage and fees.
+        """
         
-        Args:
-            slippage: Slippage percentage (0.001 = 0.1%)
-            commission: Commission percentage (0.001 = 0.1%)
-        """
-        super().__init__(**kwargs)
-        self.slippage = slippage
-        self.setcommission(commission=commission)
-    
-    def _execute_order(self, order):
-        """Execute order with slippage."""
-        if order.executed.size:
-            # Apply slippage
-            if order.isbuy():
-                price = order.data.close[0] * (1 + self.slippage)
-            else:
-                price = order.data.close[0] * (1 - self.slippage)
+        def __init__(self, slippage: float = 0.001, commission: float = 0.001, **kwargs):
+            """
+            Initialize realistic broker.
             
-            order.executed.price = price
-            return super()._execute_order(order)
+            Args:
+                slippage: Slippage percentage (0.001 = 0.1%)
+                commission: Commission percentage (0.001 = 0.1%)
+            """
+            super().__init__(**kwargs)
+            self.slippage = slippage
+            self.setcommission(commission=commission)
+        
+        def _execute_order(self, order):
+            """Execute order with slippage."""
+            if order.executed.size:
+                # Apply slippage
+                if order.isbuy():
+                    price = order.data.close[0] * (1 + self.slippage)
+                else:
+                    price = order.data.close[0] * (1 - self.slippage)
+                
+                order.executed.price = price
+                return super()._execute_order(order)
+else:
+    # Stub class when backtrader is not available
+    class RealisticBroker:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("Backtrader is required for RealisticBroker")
 
 
 class BacktestEngine:
@@ -228,23 +235,29 @@ class BacktestEngine:
 
 
 # Example strategy for backtesting
-class SMACrossStrategy(bt.Strategy):
-    """Simple moving average crossover strategy."""
-    
-    params = (
-        ('fast', 10),
-        ('slow', 30),
-    )
-    
-    def __init__(self):
-        self.sma_fast = bt.indicators.SMA(period=self.p.fast)
-        self.sma_slow = bt.indicators.SMA(period=self.p.slow)
-        self.crossover = bt.indicators.CrossOver(self.sma_fast, self.sma_slow)
-    
-    def next(self):
-        if not self.position:
-            if self.crossover > 0:
-                self.buy()
-        elif self.crossover < 0:
-            self.close()
+if BACKTRADER_AVAILABLE:
+    class SMACrossStrategy(bt.Strategy):
+        """Simple moving average crossover strategy."""
+        
+        params = (
+            ('fast', 10),
+            ('slow', 30),
+        )
+        
+        def __init__(self):
+            self.sma_fast = bt.indicators.SMA(period=self.p.fast)
+            self.sma_slow = bt.indicators.SMA(period=self.p.slow)
+            self.crossover = bt.indicators.CrossOver(self.sma_fast, self.sma_slow)
+        
+        def next(self):
+            if not self.position:
+                if self.crossover > 0:
+                    self.buy()
+            elif self.crossover < 0:
+                self.close()
+else:
+    # Stub class when backtrader is not available
+    class SMACrossStrategy:
+        def __init__(self, *args, **kwargs):
+            raise ImportError("Backtrader is required for SMACrossStrategy")
 
